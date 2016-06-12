@@ -1,0 +1,9 @@
+Look debian/changelog for later changes
+
+07.07.2008 Jari Urpalainen
+  * mod_carddav.c
+   -added conditional REPORTs (If-None-Match: "zyx")
+
+06.06.2008 Jari Urpalainen
+  * Initial release 0.0.1
+

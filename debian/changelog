@@ -1,0 +1,25 @@
+mod-carddav (0.1.0) experimental; urgency=low
+
+  * search fixed
+  * lintian fixes
+  * multiget simplification and no ugly uri guessing
+
+ -- Jari Urpalainen <jari@urpalainen.fi>  Fri, 17 Aug 2012 20:52:00 +0300
+
+mod-carddav (0.0.3) experimental; urgency=low
+
+  * some macro clenups
+
+ -- Jari Urpalainen <jari.urpalainen@nokia.com>  Mon,  1 Mar 2010 09:06:50 +0200
+
+mod-carddav (0.0.2) experimental; urgency=low
+
+  * conditional REPORT
+
+ -- Jari Urpalainen <jari.urpalainen@nokia.com>  Mon,  7 Jul 2008 08:36:50 +0300
+
+mod-carddav (0.0.1-1) unstable; urgency=low
+
+  * First debian release.
+
+ -- Jari Urpalainen <jari.urpalainen@nokia.com>  Mon, 11 Feb 2008 10:42:14 +0300

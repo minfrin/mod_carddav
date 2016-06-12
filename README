@@ -1,0 +1,39 @@
+mod_carddav:
+------------
+-this is an Apache module implementation of CardDAV support to WebDAV
+-is dependent on mod_dav_acl <http://sourceforge.net/projects/moddavacl/>,
+which implements RFC 3744 also as an Apache module
+-uses vcard library of the Evolution Data Server (EDS)
+
+Configuration:
+--------------
+-must be loaded (dlopened) after mod_dav. Depends on the base library of
+mod_dav_acl.
+-once the module installs, some directives from the mod_dav_acl are needed:
+
+DAVETagResponse on
+-enable strong ETag responses
+
+DAVACL on
+-enable ACL handling
+
+CardDAV on
+-enables carddav handling in a directory
+
+
+Install:
+--------
+-preferably e.g. debuild or rpm-build. Otherwise ./configure && make &&
+make install. You may need to run autogen.sh to generate a proper
+./configure etc.
+
+in debian:"sudo a2enmod dav_carddav" enables module loading and basic
+configuration (though you must enable carddav in appropriate collections).
+
+
+Tests:
+------
+-once the module is successfully compiled and loaded, tests can be run with
+make check or by running ./carddav_tests. You need to have admin/password
+(digest) account and /xxx/carddav directory must be available and accessible by
+apache

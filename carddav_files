@@ -1,0 +1,413 @@
+# actual file tests
+
+function count()
+{
+rc="$?"
+cAll=$(($cAll+1))
+if [ "$rc" -eq "0" ]
+then
+  c=$(($c+1))
+  if [ "$debug" -eq "1" ] ; then
+    echo "OK"
+  fi
+else
+  cat $log
+  if [ "$debug" -eq "1" ] ; then
+    echo "failed"
+    exit -1
+  fi
+fi
+
+if [ "$debug" -eq "1" ]
+then
+  echo --------------------------------------------------------
+fi
+}
+
+
+function deb()
+{
+useragent="$(($cAll+1)) / $1"
+read retag <$etag
+
+if [ "$debug" -eq "1" ]
+then
+  echo --------------------------------------------------------
+  echo "test $(($cAll+1)) $1"
+fi
+}
+
+function h()
+{
+  sed -i s/LOCALHOST/"$hostname"/ $1
+}
+
+cat > abcd1.vcf << EOF
+BEGIN:VCARD
+VERSION:3.0
+FN:Cyrus Daboo
+N:Daboo;Cyrus
+ADR;TYPE=POSTAL:;2822 Email HQ;Suite 2821;RFCVille;PA;15213;USA
+EMAIL;TYPE=INTERNET,PREF:cyrus@example.com
+NICKNAME:foo,me
+NOTE:Example VCard.
+ORG:Self Employed
+TEL;TYPE=WORK,VOICE:412 605 0499
+TEL;TYPE=FAX:412 605 0705
+URL:http://www.example.com
+UID:1234-5678-9000-1
+END:VCARD
+EOF
+
+cat > abcd2.vcf << EOF
+BEGIN:VCARD
+VERSION:3.0
+REV:2008-02-18T10:44:26Z
+UID:47B9618A00000004
+TEL;TYPE=CELL:123400002
+N:Pheckc;Jjsccj;;;
+PHOTO;TYPE="X-EVOLUTION-UNKNOWN";ENCODING=b:/9j/4AAQSkZJRgABAQEARwBHAAD//gAXQ3JlYXRlZCB3aXRoIFRoZSBHSU1Q/9sAQwAIBgYHBgUIBwcHCQkICgwUDQwLCwwZEhMPFB0aHx4dGhwcICQuJyAiLCMcHCg3KSwwMTQ0NB8nOT04MjwuMzQy/9sAQwEJCQkMCwwYDQ0YMiEcITIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIy/8AAEQgAMgAyAwEiAAIRAQMRAf/EABsAAQACAwEBAAAAAAAAAAAAAAAHCAQFBgID/8QAMBAAAgEDAQYEBQQDAAAAAAAAAQIDAAQRBQYSEyExQQdhcYEiI0JRkRQVMqFiguH/xAAaAQADAQEBAQAAAAAAAAAAAAAABAUCBgED/8QAIxEAAgICAQQCAwAAAAAAAAAAAAECAwQRQRITITEUYQUiUf/aAAwDAQACEQMRAD8An+sHUtWtNKjVrmQ7754cajLvjrgfbzPIdzWdVfds9pJb3XdQkMrcFZGj+HqY0bdVV9Tz/wBia+N9vbjvkaxMb5E9N6SJB1HxLEEjJaWsUjD6QzSMPXdGB7E1zV74t63HINy1s4F7CWCTn77wrA0TY86jY3N1qsUk6wxBxBDvYjLHkoUH4j3JP/a0V3s1CvF/QM9tKpw0THeU+TLkj8VLnmzT8y0n9FujBx5bioba/rZLWx3iPZ7RzLp95GtnqRGVTezHNjruH7/4n+67iqpq7Qi3uYWMMsNynfnE6sM8/Lr6VamFi0KMepUE1Sx7XZHbI+fjxos1H0z3SlKYEjzISI2I64OKqsyu8sck2QYrmPjBvpIYg598Vauoh8VtlY7JW2isoBwpPl6hGByZTyD+o6E+h7UtlVOcPHA/+PyI1Wal6Zp7vaC/06wnTTLtEeUDiKwzu4H8vI9AM9Tiuctkng1Nnk1G5cOoYifB4nI/jB7VjWuoT21qPmwXUCHKlphHKvqG5N6g0/cLi/Rg88FhbkbxlaUSu3kqpnn6kDzqGqbNdPB0XyK4/svZr9RVntL50GePdcKEDqzhVBx7sKtPpayppNosxzKIlDHzxUFeG2zo2n2kivWhK6PpHwwoTnfk65J7kZyT9z5VYADAwKuYtfRA5zPv7tnjgUpSmREV8bq1hvbWW1uY1khlUo6MMhgeor7UoAje18FtmLe9eeQT3EXPcglkJRPbv71EWu7Dajp2o3MGmlRCkjKQ30jPUe1WlrlNW0RptTleNB84DnjkD0P9VlxT4Nqck9pmn8JuFp2zo0cgCWFi2e7555/NSHXLadso2m3sU0NxlV65HM+VdTW3rgwvsUpSvAFKUoAUxSlAClKUAKUpQB//2Q==
+CALURI:http://example.com/foo/2
+X-EVOLUTION-FILE-AS:Toshok\, Chris
+FN:Jjsccj Pheckc
+EMAIL;TYPE=INTERNET:toshok@ximian.com
+ORG:Ximian\, Inc.;
+END:VCARD
+EOF
+
+cat > propfind_collection.xml << EOF
+<?xml version="1.0" encoding="utf-8" ?>
+<D:propfind xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:carddav" xmlns:x="foobar:">
+   <D:prop>
+      <D:resourcetype/>
+      <D:displayname/>
+      <C:supported-address-data/>
+      <C:supported-collation-set/>
+      <C:max-resource-size/>
+   </D:prop>
+ </D:propfind>
+EOF
+
+cat > mget.xml << EOF
+<?xml version="1.0" encoding="utf-8" ?>
+  <C:addressbook-multiget xmlns:D="DAV:"
+    xmlns:C="urn:ietf:params:xml:ns:carddav">
+     <D:prop>
+       <D:getetag/>
+       <C:address-data/>
+     </D:prop>
+     <D:href>abcd1.vcf</D:href>
+     <D:href>mtg1.vcf</D:href>
+     <D:href>http://LOCALHOST/carddav/joe/abcd2.vcf</D:href>
+     <D:href>http://LOCALHOST/carddav/joe/foo.vcf</D:href>
+     <D:href>/carddav/joe/abcd3.vcf</D:href>
+   </C:addressbook-multiget>
+EOF
+
+h mget.xml
+
+cat > mkcol.xml << EOF
+<?xml version="1.0" encoding="utf-8" ?>
+<D:mkcol xmlns:D="DAV:"
+         xmlns:C="urn:ietf:params:xml:ns:carddav">
+ <D:set>
+   <D:prop>
+    <D:resourcetype>
+     <D:collection/>
+     <C:addressbook/>
+    </D:resourcetype>
+    <D:displayname>Lisa's Contacts</D:displayname>
+    <C:addressbook-description xml:lang="en">My primary address book.</C:addressbook-description>
+  </D:prop>
+ </D:set>
+</D:mkcol>
+EOF
+
+cat > query.xml << EOF
+<?xml version="1.0" encoding="utf-8" ?>
+<C:addressbook-query xmlns:D="DAV:"
+ xmlns:C="urn:ietf:params:xml:ns:carddav">
+  <D:prop>
+    <D:getetag/>
+    <C:address-data>
+      <C:prop name="VERSION"/>
+      <C:prop name="UID"/>
+      <C:prop name="NICKNAME"/>
+      <C:prop name="EMAIL"/>
+      <C:prop name="FN"/>
+    </C:address-data>
+  </D:prop>
+  <C:filter>
+    <C:prop-filter name="NICKNAME">
+      <C:text-match collation="i;unicode-casemap"
+                    match-type="contains"
+       >me</C:text-match>
+    </C:prop-filter>
+  </C:filter>
+</C:addressbook-query>
+EOF
+
+cat > query2.xml << EOF
+<?xml version="1.0" encoding="utf-8" ?>
+<C:addressbook-query xmlns:D="DAV:"
+  xmlns:C="urn:ietf:params:xml:ns:carddav">
+  <D:prop>
+    <D:getetag/>
+    <C:address-data>
+      <C:prop name="VERSION"/>
+      <C:prop name="UID"/>
+      <C:prop name="NICKNAME"/>
+      <C:prop name="EMAIL"/>
+      <C:prop name="FN"/>
+      <C:prop name="TEL"/>
+    </C:address-data>
+  </D:prop>
+  <C:filter test="allof">
+    <C:prop-filter name="TEL">
+       <C:param-filter name="TYPE">
+             <C:text-match collation="i;unicode-casemap"
+                    match-type="equals"
+       >CELL</C:text-match>
+       </C:param-filter>
+    </C:prop-filter>
+  </C:filter>
+</C:addressbook-query>
+EOF
+
+cat > query3.xml << EOF
+<?xml version="1.0" encoding="utf-8" ?>
+<C:addressbook-query xmlns:D="DAV:"
+  xmlns:C="urn:ietf:params:xml:ns:carddav">
+  <D:prop>
+    <D:getetag/>
+    <C:address-data>
+      <C:prop name="VERSION"/>
+      <C:prop name="UID"/>
+      <C:prop name="NICKNAME"/>
+      <C:prop name="EMAIL"/>
+      <C:prop name="FN"/>
+      <C:prop name="TEL"/>
+    </C:address-data>
+  </D:prop>
+  <C:filter test="allof">
+    <C:prop-filter name="TEL" test="allof">
+       <C:param-filter name="TYPE">
+             <C:text-match collation="i;unicode-casemap"
+                    match-type="equals"
+       >CELL</C:text-match>
+              </C:param-filter>
+        <C:text-match collation="i;unicode-casemap"
+                    match-type="contains"
+       >1234</C:text-match>
+    </C:prop-filter>
+  </C:filter>
+</C:addressbook-query>
+EOF
+
+
+cat > query4.xml << EOF
+<?xml version="1.0" encoding="utf-8" ?>
+<C:addressbook-query xmlns:D="DAV:"
+  xmlns:C="urn:ietf:params:xml:ns:carddav">
+  <D:prop>
+    <D:getetag/>
+    <C:address-data>
+      <C:prop name="VERSION"/>
+      <C:prop name="UID"/>
+      <C:prop name="NICKNAME"/>
+      <C:prop name="EMAIL"/>
+      <C:prop name="FN"/>
+      <C:prop name="NOTE"/>
+    </C:address-data>
+  </D:prop>
+  <C:filter test="allof">
+    <C:prop-filter name="NICKNAME">
+      <C:text-match collation="i;unicode-casemap"
+                    match-type="starts-with"
+       >foo</C:text-match>
+    </C:prop-filter>
+    <C:prop-filter name="NOTE">
+      <C:text-match collation="i;unicode-casemap"
+                    match-type="contains"
+       >xample</C:text-match>
+    </C:prop-filter>
+  </C:filter>
+</C:addressbook-query>
+EOF
+
+
+cat > query5.xml << EOF
+<?xml version="1.0" encoding="utf-8" ?>
+<C:addressbook-query xmlns:D="DAV:"
+  xmlns:C="urn:ietf:params:xml:ns:carddav">
+  <D:prop>
+    <D:getetag/>
+    <C:address-data>
+      <C:prop name="VERSION"/>
+      <C:prop name="UID"/>
+      <C:prop name="NICKNAME"/>
+      <C:prop name="EMAIL"/>
+      <C:prop name="FN"/>
+      <C:prop name="TEL"/>
+    </C:address-data>
+  </D:prop>
+  <C:filter test="allof">
+    <C:prop-filter name="TEL" test="allof">
+       <C:param-filter name="TYPE">
+             <C:text-match collation="i;unicode-casemap"
+                    match-type="equals"
+       >CELL</C:text-match>
+              </C:param-filter>
+        <C:text-match collation="i;unicode-casemap"
+                    match-type="contains"
+       >12345</C:text-match>
+    </C:prop-filter>
+  </C:filter>
+</C:addressbook-query>
+EOF
+
+cat > query6.xml << EOF
+<?xml version="1.0" encoding="utf-8" ?>
+<C:addressbook-query xmlns:D="DAV:"
+  xmlns:C="urn:ietf:params:xml:ns:carddav">
+  <D:prop>
+    <D:getetag/>
+    <C:address-data>
+      <C:prop name="VERSION"/>
+      <C:prop name="UID"/>
+      <C:prop name="NICKNAME"/>
+      <C:prop name="EMAIL"/>
+      <C:prop name="FN"/>
+      <C:prop name="TEL"/>
+    </C:address-data>
+  </D:prop>
+  <C:filter test="allof">
+    <C:prop-filter name="TEL" test="anyof">
+       <C:param-filter name="TYPE">
+             <C:text-match collation="i;unicode-casemap"
+                    match-type="equals"
+       >CELL</C:text-match>
+              </C:param-filter>
+        <C:text-match collation="i;unicode-casemap"
+                    match-type="contains"
+       >12345</C:text-match>
+    </C:prop-filter>
+  </C:filter>
+</C:addressbook-query>
+EOF
+
+cat > query7.xml << EOF
+<?xml version="1.0" encoding="utf-8" ?>
+<C:addressbook-query xmlns:D="DAV:"
+  xmlns:C="urn:ietf:params:xml:ns:carddav">
+  <D:prop>
+    <D:getetag/>
+    <C:address-data/>
+  </D:prop>
+  <C:filter>
+    <C:prop-filter name="UID"/>
+  </C:filter>
+</C:addressbook-query>
+EOF
+
+cat > query_sync.xml << EOF
+<?xml version="1.0" encoding="utf-8" ?>
+<C:addressbook-query xmlns:D="DAV:"
+  xmlns:C="urn:ietf:params:xml:ns:carddav">
+  <D:prop>
+    <D:getetag/>
+  </D:prop>
+  <C:filter>
+    <C:prop-filter name="UID"/>
+  </C:filter>
+</C:addressbook-query>
+EOF
+
+
+user=admin:password
+path=$uri/carddav
+
+for i in `seq 1 1`;
+do
+
+# 1
+deb "Create a principal carddav collection"
+$cli -v -u "$user" -A "$useragent" -s "$result" -m MKCOL $path/joe/ -T mkcol.xml -r 201 > $log 2>&1
+count
+
+# 2
+deb "Propfind carddav collection"
+$cli -v -u "$user" -A "$useragent" -s "$result" -m PROPFIND -T propfind_collection.xml -c application/xml -X "Depth: 0" $path/joe/ -r 207 > $log 2>&1
+count
+
+# 3
+deb "Put a vcard-file"
+$cli -v -u "$user" -A "$useragent" -s "$result" -T abcd1.vcf -c text/vcard -e $etag $path/joe/abcd1.vcf -r 201 > $log 2>&1
+count
+
+# 4
+deb "Put a second vcard-file"
+$cli -v -u "$user" -A "$useragent" -s "$result" -T abcd2.vcf -c text/vcard -e $etag $path/joe/abcd2.vcf -r 201 > $log 2>&1
+count
+
+# 5
+deb "mget vcard file contents, depth 0 thus no results"
+$cli -v -u "$user" -A "$useragent" -s "$result" -T mget.xml -c application/xml -m REPORT -X "Depth: 0" $path/joe/ -r 404 > $log 2>&1
+count
+
+# 6
+deb "mget vcard file contents"
+$cli -v -u "$user" -A "$useragent" -s "$result" -T mget.xml -c application/xml -m REPORT -X "Depth: 1" $path/joe/ -r 207 > $log 2>&1
+count
+
+# 7
+deb "query"
+$cli -v -u "$user" -A "$useragent" -s "$result" -T query7.xml -c application/xml -m REPORT -X "Depth: 1" $path/joe/ -r 207 > $log 2>&1
+count
+
+# 8
+deb "sync query"
+$cli -v -u "$user" -A "$useragent" -s "$result" -T query_sync.xml -c application/xml -e $etag -m REPORT -X "Depth: 1" $path/joe/ -r 207 > $log 2>&1
+count
+
+# 9
+deb "conditional sync query"
+$cli -v -u "$user" -A "$useragent" -s "$result" -T query_sync.xml -c application/xml -n $retag -m REPORT -X "Depth: 1" $path/joe/ -r 304 > $log 2>&1
+count
+
+# 10
+deb "query"
+$cli -v -u "$user" -A "$useragent" -s "$result" -T query.xml -c application/xml -m REPORT -X "Depth: 1" $path/joe/ -r 207 > $log 2>&1
+count
+
+# 11
+deb "query"
+$cli -v -u "$user" -A "$useragent" -s "$result" -T query2.xml -c application/xml -m REPORT -X "Depth: 1" $path/joe/ -r 207 > $log 2>&1
+count
+
+# 12
+deb "query"
+$cli -v -u "$user" -A "$useragent" -s "$result" -T query3.xml -c application/xml -m REPORT -X "Depth: 1" $path/joe/ -r 207 > $log 2>&1
+count
+
+# 13
+deb "query"
+$cli -v -u "$user" -A "$useragent" -s "$result" -T query4.xml -c application/xml -m REPORT -X "Depth: 1" $path/joe/ -r 207 > $log 2>&1
+count
+
+# 14
+deb "query"
+$cli -v -u "$user" -A "$useragent" -s "$result" -T query5.xml -c application/xml -m REPORT -X "Depth: 1" $path/joe/ -r 404 > $log 2>&1
+count
+
+# 15
+deb "query"
+$cli -v -u "$user" -A "$useragent" -s "$result" -T query6.xml -c application/xml -m REPORT -X "Depth: 1" $path/joe/ -r 207 > $log 2>&1
+count
+
+# 16
+deb "Delete a collection"
+$cli -v -u "$user" -A "$useragent" -s "$result" -m DELETE $path/joe/ -r 204 > $log 2>&1
+count
+
+done # for loop

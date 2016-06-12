@@ -1,0 +1,40 @@
+# being lazy...
+%define _unpackaged_files_terminate_build 0
+#
+Summary:   mod_carddav handler module
+Name:      mod_carddav
+Version:   @VERSION@
+Release:   1
+License:   LGPL
+Group: 	   System Environment/Daemons
+Source:    %{name}-%{version}.tar.gz
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
+Requires:  libxml2 httpd mod_dav_acl evolution-data-server
+BuildRequires: libxml2-devel httpd-devel mod_dav_acl evolution-data-server-devel
+Prefix: %{_prefix}
+
+%prep
+%setup -q
+
+%post
+
+%build
+CFLAGS="$RPM_OPT_FLAGS" \
+./configure --prefix=%{prefix}
+
+%description
+Apache module to handle carddav requests
+
+%install
+rm -fr %{buildroot}
+
+%makeinstall
+
+%clean
+rm -fr %{buildroot}
+
+%files
+%defattr(-,root,root)
+%config(noreplace) %{_sysconfdir}/httpd/conf.d/dav_carddav.conf
+%attr(0755,root,root) %{_libdir}/httpd/modules/mod_carddav.so*
+%doc AUTHORS ChangeLog NEWS README
