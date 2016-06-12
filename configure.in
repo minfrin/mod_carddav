@@ -27,7 +27,7 @@ dnl ===========================================================================
 dnl Process this file with autoconf to produce a configure script.
 dnl ===========================================================================
 
-AC_INIT([mod_carddav],0.1.0)
+AC_INIT([mod_carddav],0.2.0)
 
 dnl ===========================================================================
 dnl Get host, target and build variables filled with appropriate info.
