@@ -41,8 +41,8 @@ static EVCard *parse_vcard(const char *file)
     gsize length;
 
     if (g_file_get_contents(file, &str, &length, NULL)) {
-	c = e_vcard_new_from_string(str);
-	g_free(str);
+        c = e_vcard_new_from_string(str);
+        g_free(str);
     }
 
     return c;
@@ -54,9 +54,9 @@ static char *endswith(const char *s1, const char *s2,
     char *p;
 
     if ((p = fn(s1, s2)) && (strlen(p) == strlen(s2)))
-	return p;
+        return p;
     else
-	return NULL;
+        return NULL;
 }
 
 static char *beginswith(const char *s1, const char *s2,
@@ -65,9 +65,9 @@ static char *beginswith(const char *s1, const char *s2,
     char *p;
 
     if ((p = fn(s1, s2)) && (p == s1))
-	return p;
+        return p;
     else
-	return NULL;
+        return NULL;
 }
 
 static char *contains(const char *s1, const char *s2,
@@ -91,32 +91,32 @@ static int text_matches(xmlNode *node, const char *pch)
     char * (*cmp) (const char *a, const char *b, fn_s *fn) = NULL;
 
     if (match_type == NULL || strcasecmp((char *) match_type, "contains") == 0)
-	cmp = contains;
+        cmp = contains;
     else  if (strcasecmp((char *) match_type, "equals") == 0)
-	feq = TRUE;
+        feq = TRUE;
     else if (strcasecmp((char *) match_type, "starts-with") == 0)
-	cmp = beginswith;
+        cmp = beginswith;
     else if (strcasecmp((char *) match_type, "ends-with") == 0)
-	cmp = endswith;
+        cmp = endswith;
 
     if (collation == NULL ||
-	strcasecmp((char *) collation, "i;unicode-casemap") == 0 ||
-		strcasecmp((char *) collation, "i;ascii-casemap") == 0) {
-	fn = (fn_s *) xmlStrcasestr;
-	eq = xmlStrcasecmp;
+        strcasecmp((char *) collation, "i;unicode-casemap") == 0 ||
+                strcasecmp((char *) collation, "i;ascii-casemap") == 0) {
+        fn = (fn_s *) xmlStrcasestr;
+        eq = xmlStrcasecmp;
     }
     else {
-	fn = (fn_s *) xmlStrstr;
-	eq = xmlStrcmp;
+        fn = (fn_s *) xmlStrstr;
+        eq = xmlStrcmp;
     }
 
     if (feq)
-	rc = (value && pch) ? eq((xmlChar *) pch, value) == 0 : 0;
+        rc = (value && pch) ? eq((xmlChar *) pch, value) == 0 : 0;
     else if (cmp)
-	rc = (value && pch) ? cmp(pch, (char *) value, fn) != NULL : 0;
+        rc = (value && pch) ? cmp(pch, (char *) value, fn) != NULL : 0;
 
     if ((feq || cmp) && invert && strcasecmp((char *) invert, "yes") == 0)
-	rc = !rc;
+        rc = !rc;
 
     xmlFree(value);
     xmlFree(match_type);
@@ -133,42 +133,42 @@ static int param_matches(xmlNode *node, EVCardAttribute *attr)
     GList *p;
 
     if (pch == NULL)
-	return FALSE;
+        return FALSE;
 
     p = e_vcard_attribute_get_params(attr);
 
     for ( ; p; p = p->next) {
-	EVCardAttributeParam *param = p->data;
-	const char *name = e_vcard_attribute_param_get_name(param);
+        EVCardAttributeParam *param = p->data;
+        const char *name = e_vcard_attribute_param_get_name(param);
 
-	if (name && strcasecmp(name, (char *) pch) == 0) {
-	    xmlNode *prop;
+        if (name && strcasecmp(name, (char *) pch) == 0) {
+            xmlNode *prop;
 
-	    FOR_CHILD(prop, node) {
-		if (NODE_NOT_CARDDAV(prop)) {
-		    ;
-		}
-		else if (NODE_MATCH(prop, "is-not-defined")) {
-		    xmlFree(pch);
-		    return FALSE;
-		}
-		else if (NODE_MATCH(prop, "text-match")) {
-		    GList *v = e_vcard_attribute_param_get_values(param);
+            FOR_CHILD(prop, node) {
+                if (NODE_NOT_CARDDAV(prop)) {
+                    ;
+                }
+                else if (NODE_MATCH(prop, "is-not-defined")) {
+                    xmlFree(pch);
+                    return FALSE;
+                }
+                else if (NODE_MATCH(prop, "text-match")) {
+                    GList *v = e_vcard_attribute_param_get_values(param);
 
-		    for ( ; v; v = v->next) {
-			if (text_matches(prop, v->data)) {
-			    xmlFree(pch);
-			    return TRUE;
-			}
-		    }
-		}
-		else if (prop->type == XML_ELEMENT_NODE) {
-		    /* rule not understood !!! */
-		    xmlFree(pch);
-		    return FALSE;
-		}
-	    }
-	}
+                    for ( ; v; v = v->next) {
+                        if (text_matches(prop, v->data)) {
+                            xmlFree(pch);
+                            return TRUE;
+                        }
+                    }
+                }
+                else if (prop->type == XML_ELEMENT_NODE) {
+                    /* rule not understood !!! */
+                    xmlFree(pch);
+                    return FALSE;
+                }
+            }
+        }
     }
     xmlFree(pch);
 
@@ -185,38 +185,38 @@ static int attr_match(xmlNode *node, EVCardAttribute *attr)
     xmlFree(allof), allof = NULL;
 
     FOR_CHILD(param, node) {
-	int rc = TRUE;
+        int rc = TRUE;
 
-	if (NODE_NOT_CARDDAV(param)) {
-	    if (param->type == XML_ELEMENT_NODE)
-		rc = FALSE;
-	    else
-		continue;
-	}
-	else if (NODE_MATCH(param, "is-not-defined")) {
-	    rc = (attr == NULL);
-	}
-	else if (NODE_MATCH(param, "param-filter")) {
-	    rc = (attr && param_matches(param, attr)) == TRUE;
-	}
-	else if (NODE_MATCH(param, "text-match")) {
-	    GList *v = attr ? e_vcard_attribute_get_values(attr) : NULL;
+        if (NODE_NOT_CARDDAV(param)) {
+            if (param->type == XML_ELEMENT_NODE)
+                rc = FALSE;
+            else
+                continue;
+        }
+        else if (NODE_MATCH(param, "is-not-defined")) {
+            rc = (attr == NULL);
+        }
+        else if (NODE_MATCH(param, "param-filter")) {
+            rc = (attr && param_matches(param, attr)) == TRUE;
+        }
+        else if (NODE_MATCH(param, "text-match")) {
+            GList *v = attr ? e_vcard_attribute_get_values(attr) : NULL;
 
-	    for (rc = FALSE; v; v = v->next) {
-		if (text_matches(param, v->data)) {
-		    rc = TRUE;
-		    break;
-		}
-	    }
-	}
-	else if (param->type == XML_ELEMENT_NODE) {
-	    rc = FALSE;
-	}
+            for (rc = FALSE; v; v = v->next) {
+                if (text_matches(param, v->data)) {
+                    rc = TRUE;
+                    break;
+                }
+            }
+        }
+        else if (param->type == XML_ELEMENT_NODE) {
+            rc = FALSE;
+        }
 
-	if ((and && rc == FALSE) || (and == FALSE && rc))
-	    return rc;
+        if ((and && rc == FALSE) || (and == FALSE && rc))
+            return rc;
 
-	ret = rc;
+        ret = rc;
     }
 
     return ret;
@@ -235,43 +235,43 @@ static int carddav_vcard_matches(EVCard *c, xmlNode *filter)
     xmlFree(allof), allof = NULL;
 
     for (node = filter ? filter->children : NULL; node; node = node->next) {
-	if (NODE_NOT_CARDDAV(node)) {
-	    if (node->type == XML_ELEMENT_NODE && and)
-		return FALSE;
-	    else
-		continue;
-	}
-	else if (NODE_MATCH(node, "prop-filter")) {
-	    xmlChar *pch = xmlGetProp(node, (const xmlChar *) "name");
-	    int rc = FALSE;
-	    GList *l;
+        if (NODE_NOT_CARDDAV(node)) {
+            if (node->type == XML_ELEMENT_NODE && and)
+                return FALSE;
+            else
+                continue;
+        }
+        else if (NODE_MATCH(node, "prop-filter")) {
+            xmlChar *pch = xmlGetProp(node, (const xmlChar *) "name");
+            int rc = FALSE;
+            GList *l;
 
-	    if (pch == NULL)
-		return FALSE;
+            if (pch == NULL)
+                return FALSE;
 
-	    for (l = e_vcard_get_attributes(c); l; l = l->next) {
-		EVCardAttribute *attr = l->data;
-		const char *name = e_vcard_attribute_get_name(attr);
+            for (l = e_vcard_get_attributes(c); l; l = l->next) {
+                EVCardAttribute *attr = l->data;
+                const char *name = e_vcard_attribute_get_name(attr);
 
-		if (name && strcasecmp((char *) pch, name) == 0) {
-		    rc = attr_match(node, attr);
+                if (name && strcasecmp((char *) pch, name) == 0) {
+                    rc = attr_match(node, attr);
 
-		    if (rc == TRUE)
-			break;
-		}
-	    }
-	    xmlFree(pch);
+                    if (rc == TRUE)
+                        break;
+                }
+            }
+            xmlFree(pch);
 
-	    if ((and && rc == FALSE) || (and == FALSE && rc))
-		return rc;
+            if ((and && rc == FALSE) || (and == FALSE && rc))
+                return rc;
 
-	    ret = rc;
-	}
-	else if (node->type == XML_ELEMENT_NODE) {
-	    /* rule not understood !!! */
-	    if (and)
-		return FALSE;
-	}
+            ret = rc;
+        }
+        else if (node->type == XML_ELEMENT_NODE) {
+            /* rule not understood !!! */
+            if (and)
+                return FALSE;
+        }
     }
 
     return ret;
@@ -284,55 +284,55 @@ static char *carddav_vcard_dump_query(EVCard *c, xmlNode *carddata)
     xmlNode *n = NULL;
 
     FOR_CHILD(n, carddata) {
-	if (NODE_NOT_CARDDAV(n))
-	    ;
-	else if (NODE_MATCH(n, "prop"))
-	    all_props = FALSE;
-	else if (NODE_MATCH(n, "allprop"))
-	    all_props = TRUE;
+        if (NODE_NOT_CARDDAV(n))
+            ;
+        else if (NODE_MATCH(n, "prop"))
+            all_props = FALSE;
+        else if (NODE_MATCH(n, "allprop"))
+            all_props = TRUE;
     }
 
     if (all_props == FALSE) {
-	GList *l = e_vcard_get_attributes(c);
+        GList *l = e_vcard_get_attributes(c);
 
-	for ( ; l; ) {
-	    EVCardAttribute *attr = l->data;
-	    int f = FALSE;
+        for ( ; l; ) {
+            EVCardAttribute *attr = l->data;
+            int f = FALSE;
 
-	    FOR_CHILD(n, carddata) {
-		if (NODE_NOT_CARDDAV(n)) {
-		    ;
-		}
-		else if (NODE_MATCH(n, "prop")) {
-		    xmlChar *pch = xmlGetProp(n, (const xmlChar *) "name");
-		    const char *name = e_vcard_attribute_get_name(attr);
+            FOR_CHILD(n, carddata) {
+                if (NODE_NOT_CARDDAV(n)) {
+                    ;
+                }
+                else if (NODE_MATCH(n, "prop")) {
+                    xmlChar *pch = xmlGetProp(n, (const xmlChar *) "name");
+                    const char *name = e_vcard_attribute_get_name(attr);
 
-		    if (pch && name && strcasecmp((char *) pch, name) == 0) {
-			f = TRUE;
-			break;
-		    }
-		    xmlFree(pch);
-		}
-	    }
+                    if (pch && name && strcasecmp((char *) pch, name) == 0) {
+                        f = TRUE;
+                        break;
+                    }
+                    xmlFree(pch);
+                }
+            }
 
-	    if (f == FALSE) {
-		GList *t = l->next;
+            if (f == FALSE) {
+                GList *t = l->next;
 
-		e_vcard_remove_attribute(c, attr);
-		l = t;
-	    }
-	    else {
-		xmlChar *val = xmlGetProp(n, (const xmlChar *) "novalue");
+                e_vcard_remove_attribute(c, attr);
+                l = t;
+            }
+            else {
+                xmlChar *val = xmlGetProp(n, (const xmlChar *) "novalue");
 
-		if (val && strcasecmp((char *) val, "yes") == 0) {
-		    e_vcard_attribute_remove_params(attr);
-		    e_vcard_attribute_remove_values(attr);
-		}
-		xmlFree(val);
+                if (val && strcasecmp((char *) val, "yes") == 0) {
+                    e_vcard_attribute_remove_params(attr);
+                    e_vcard_attribute_remove_values(attr);
+                }
+                xmlFree(val);
 
-		l = l->next;
-	    }
-	}
+                l = l->next;
+            }
+        }
     }
 
     return e_vcard_to_string(c, EVC_FORMAT_VCARD_30);
@@ -359,7 +359,7 @@ int carddav_vcard_search(const char *file, xmlNode *addressdata,
     p->filter = filter;
 
     if (filter == NULL)
-	return 1;
+        return 1;
 
     return carddav_vcard_matches(p->root, filter);
 }
@@ -368,11 +368,11 @@ int carddav_vcard_search(const char *file, xmlNode *addressdata,
 char *carddav_vcard_dump(carddav_search_t *p)
 {
     if (p == NULL)
-	return NULL;
+        return NULL;
 
     /* dump full content */
     if (p->filter == NULL)
-	return p->root ? e_vcard_to_string(p->root, EVC_FORMAT_VCARD_30) : NULL;
+        return p->root ? e_vcard_to_string(p->root, EVC_FORMAT_VCARD_30) : NULL;
 
     /* dump selected components only */
     return carddav_vcard_dump_query(p->root, p->addressdata);
@@ -382,11 +382,11 @@ char *carddav_vcard_dump(carddav_search_t *p)
 int carddav_vcard_free(carddav_search_t *p)
 {
     if (p == NULL)
-	return -1;
+        return -1;
 
     if (p->root) {
-	g_object_unref(p->root);
-	p->root = NULL;
+        g_object_unref(p->root);
+        p->root = NULL;
     }
 
     free(p);

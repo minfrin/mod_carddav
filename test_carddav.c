@@ -37,7 +37,7 @@
 
 #include <libxml/tree.h>
 
-#define NS_DAV	"DAV:"
+#define NS_DAV        "DAV:"
 
 #include "mod_carddav.h"
 #include "carddav_vcard.h"
@@ -46,7 +46,7 @@
 static void usage(const char *argv)
 {
     fprintf(stdout, "%s -q request_xml_doc -i vcardfile\n" \
-		    "returns 0 if succeeds, 1 for an error\n", argv);
+                    "returns 0 if succeeds, 1 for an error\n", argv);
 }
 
 /** main for vcard search testings */
@@ -61,25 +61,25 @@ int main(int argc, char *argv[])
     g_type_init();
 
     while ((opt = getopt(argc, argv, "q:i:")) != -1) {
-	switch (opt) {
-	case ':':
-	case 'h':
-	case '?':
-	    usage(argv[0]);
-	    return EXIT_FAILURE;
+        switch (opt) {
+        case ':':
+        case 'h':
+        case '?':
+            usage(argv[0]);
+            return EXIT_FAILURE;
 
-	case 'q':
-	    file = optarg;
-	    break;
+        case 'q':
+            file = optarg;
+            break;
 
-	case 'i':
-	    vcard = optarg;
-	    break;
-	}
+        case 'i':
+            vcard = optarg;
+            break;
+        }
     }
     if (file == NULL || vcard == NULL) {
-	usage(argv[0]);
-	return EXIT_FAILURE;
+        usage(argv[0]);
+        return EXIT_FAILURE;
     }
     /* do not prevent the creation of cdata nodes */
     doc = xmlParseFile(file);
@@ -87,41 +87,41 @@ int main(int argc, char *argv[])
     node = doc ? doc->children : NULL;
 
     for ( ; node; node = node->next) {
-	if (NODE_NOT_CARDDAV(node)) {
-	    ;
-	}
-	else if (NODE_MATCH(node, "addressbook-query")) {
-	    FOR_CHILD(node, node) {
-		if (NODE_NOT_DAV(node))
-		    ;
-		else if (NODE_MATCH(node, "prop"))
-		    break;
-	    }
-	    break;
-	}
+        if (NODE_NOT_CARDDAV(node)) {
+            ;
+        }
+        else if (NODE_MATCH(node, "addressbook-query")) {
+            FOR_CHILD(node, node) {
+                if (NODE_NOT_DAV(node))
+                    ;
+                else if (NODE_MATCH(node, "prop"))
+                    break;
+            }
+            break;
+        }
     }
 
     FOR_CHILD(carddata, node) {
-	if (NODE_NOT_CARDDAV(carddata))
-	    ;
-	else if (NODE_MATCH(carddata, "address-data"))
-	    break;
+        if (NODE_NOT_CARDDAV(carddata))
+            ;
+        else if (NODE_MATCH(carddata, "address-data"))
+            break;
     }
 
     child = node ? node->parent : NULL;
     FOR_CHILD(child, child) {
-	if (NODE_MATCH(child, "filter"))
-	    break;
+        if (NODE_MATCH(child, "filter"))
+            break;
     }
 
     if ((rc = carddav_vcard_search(vcard, carddata, child, &p))) {
-	char *pch = NULL;
+        char *pch = NULL;
 
-	printf("%s\n", pch = carddav_vcard_dump(p));
-	free(pch);
+        printf("%s\n", pch = carddav_vcard_dump(p));
+        free(pch);
     }
     else {
-	printf("search did not find anything\n");
+        printf("search did not find anything\n");
     }
 
     carddav_vcard_free(p);

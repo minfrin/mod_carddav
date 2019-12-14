@@ -46,7 +46,7 @@
 static const char * const carddav_namespace_uris[] =
 {
     NS_CARDDAV,
-    NULL	/* sentinel */
+    NULL        /* sentinel */
 };
 
 enum {
@@ -101,68 +101,68 @@ static dav_prop_insert carddav_insert_prop(const dav_resource *resource,
     char *fchar = NULL;
 
     if (!resource->exists)
-	return DAV_PROP_INSERT_NOTDEF;
+        return DAV_PROP_INSERT_NOTDEF;
 
     /* ### we may want to respond to DAV_PROPID_resourcetype for PRIVATE
        ### resources. need to think on "proper" interaction with mod_dav */
 
     switch (propid) {
     case CARDDAV_PROPID_address_data:
-	{
-	    request_rec *r = resource->hooks->get_request_rec(resource);
-	    carddav_search_t *p;
+        {
+            request_rec *r = resource->hooks->get_request_rec(resource);
+            carddav_search_t *p;
 
-	    if (r->method_number != M_REPORT)
-		return DAV_PROP_INSERT_NOTDEF;
+            if (r->method_number != M_REPORT)
+                return DAV_PROP_INSERT_NOTDEF;
 
-	    p = resource->ctx;
-	    value = fchar = carddav_vcard_dump(p);
-	    if (value == NULL)
-		return DAV_PROP_INSERT_NOTDEF;
-	    break;
-	}
+            p = resource->ctx;
+            value = fchar = carddav_vcard_dump(p);
+            if (value == NULL)
+                return DAV_PROP_INSERT_NOTDEF;
+            break;
+        }
 
     case CARDDAV_PROPID_supported_collation_set:
-	if (what == DAV_PROP_INSERT_VALUE) {
-	    global_ns = dav_get_liveprop_info(propid, &carddav_liveprop_group, &info);
+        if (what == DAV_PROP_INSERT_VALUE) {
+            global_ns = dav_get_liveprop_info(propid, &carddav_liveprop_group, &info);
 
-	    s = apr_psprintf(p,
-		 "<lp%d:%s>" DEBUG_CR
-		 "<lp%d:supported-collation>i;ascii-casemap</lp%d:supported-collation>" DEBUG_CR
-		 "<lp%d:supported-collation>i;octet</lp%d:supported-collation>" DEBUG_CR
-		 "<lp%d:supported-collation>i;unicode-casemap</lp%d:supported-collation>" DEBUG_CR
-		 "</lp%d:%s>" DEBUG_CR,
-		 global_ns, info->name,
-		 global_ns, global_ns,
-		 global_ns, global_ns,
-		 global_ns, global_ns,
-		 global_ns, info->name);
+            s = apr_psprintf(p,
+                 "<lp%d:%s>" DEBUG_CR
+                 "<lp%d:supported-collation>i;ascii-casemap</lp%d:supported-collation>" DEBUG_CR
+                 "<lp%d:supported-collation>i;octet</lp%d:supported-collation>" DEBUG_CR
+                 "<lp%d:supported-collation>i;unicode-casemap</lp%d:supported-collation>" DEBUG_CR
+                 "</lp%d:%s>" DEBUG_CR,
+                 global_ns, info->name,
+                 global_ns, global_ns,
+                 global_ns, global_ns,
+                 global_ns, global_ns,
+                 global_ns, info->name);
 
-	    apr_text_append(p, phdr, s);
-	    return what;
-	}
-	break;
+            apr_text_append(p, phdr, s);
+            return what;
+        }
+        break;
 
     case CARDDAV_PROPID_supported_address_data:
-	if (what == DAV_PROP_INSERT_VALUE) {
-	    global_ns = dav_get_liveprop_info(propid, &carddav_liveprop_group, &info);
+        if (what == DAV_PROP_INSERT_VALUE) {
+            global_ns = dav_get_liveprop_info(propid, &carddav_liveprop_group, &info);
 
-	    s = apr_psprintf(p,
-		"<lp%d:%s>" DEBUG_CR
-		"<lp%d:address-data content-type=\"text/vcard\" version=\"3.0\"/>" DEBUG_CR
-		"</lp%d:%s>" DEBUG_CR,
-		global_ns, info->name,
-		global_ns,
-		global_ns, info->name);
+            s = apr_psprintf(p,
+                "<lp%d:%s>" DEBUG_CR
+                "<lp%d:address-data content-type=\"text/vcard\" version=\"3.0\"/>" DEBUG_CR
+                "</lp%d:%s>" DEBUG_CR,
+                global_ns, info->name,
+                global_ns,
+                global_ns, info->name);
 
-	    apr_text_append(p, phdr, s);
-	    return what;
-	}
-	break;
+            apr_text_append(p, phdr, s);
+            return what;
+        }
+        break;
 
     default:
-	/* ### what the heck was this property? */
-	return DAV_PROP_INSERT_NOTDEF;
+        /* ### what the heck was this property? */
+        return DAV_PROP_INSERT_NOTDEF;
     }
 
     /* get the information and global NS index for the property */
@@ -170,15 +170,15 @@ static dav_prop_insert carddav_insert_prop(const dav_resource *resource,
 
     /* assert: info != NULL && info->name != NULL */
     if (what == DAV_PROP_INSERT_VALUE)
-	s = apr_psprintf(p, "<lp%d:%s>%s</lp%d:%s>" DEBUG_CR,
-			 global_ns, info->name, value, global_ns, info->name);
+        s = apr_psprintf(p, "<lp%d:%s>%s</lp%d:%s>" DEBUG_CR,
+                         global_ns, info->name, value, global_ns, info->name);
     else if (what == DAV_PROP_INSERT_NAME)
-	s = apr_psprintf(p, "<lp%d:%s/>" DEBUG_CR, global_ns, info->name);
+        s = apr_psprintf(p, "<lp%d:%s/>" DEBUG_CR, global_ns, info->name);
     else
-	/* assert: what == DAV_PROP_INSERT_SUPPORTED */
-	s = apr_psprintf(p, "<D:supported-live-property D:name=\"%s\" "
-			 "D:namespace=\"%s\"/>" DEBUG_CR, info->name,
-			 carddav_namespace_uris[info->ns]);
+        /* assert: what == DAV_PROP_INSERT_SUPPORTED */
+        s = apr_psprintf(p, "<D:supported-live-property D:name=\"%s\" "
+                         "D:namespace=\"%s\"/>" DEBUG_CR, info->name,
+                         carddav_namespace_uris[info->ns]);
 
     apr_text_append(p, phdr, s);
     g_free(fchar);
@@ -208,19 +208,19 @@ static dav_error *carddav_patch_validate(const dav_resource *resource,
     switch (priv->propid) {
     case CARDDAV_PROPID_addressbook_home_set:
     case CARDDAV_PROPID_principal_address:
-	if (!dav_acl_is_resource_principal(resource))
-	    return dav_new_error(resource->pool, HTTP_CONFLICT, 0, APR_SUCCESS,
-				 "The resource URI is not a principal");
+        if (!dav_acl_is_resource_principal(resource))
+            return dav_new_error(resource->pool, HTTP_CONFLICT, 0, APR_SUCCESS,
+                                 "The resource URI is not a principal");
 
-	*defer_to_dead = TRUE;
-	break;
+        *defer_to_dead = TRUE;
+        break;
 
     case CARDDAV_PROPID_addressbook_description:
-	*defer_to_dead = TRUE;
-	break;
+        *defer_to_dead = TRUE;
+        break;
 
     default:
-	break;
+        break;
     }
 
     return NULL;
