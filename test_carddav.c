@@ -33,7 +33,7 @@
 #include <unistd.h>
 
 #include <glib.h>
-#include <libebook/e-vcard.h>
+#include <libebook/libebook.h>
 
 #include <libxml/tree.h>
 
@@ -58,7 +58,9 @@ int main(int argc, char *argv[])
     carddav_search_t *p = NULL;
     xmlNodePtr node, carddata = NULL, child = NULL;
 
+#if !GLIB_CHECK_VERSION(2,35,0)
     g_type_init();
+#endif
 
     while ((opt = getopt(argc, argv, "q:i:")) != -1) {
         switch (opt) {

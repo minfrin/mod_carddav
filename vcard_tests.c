@@ -32,7 +32,7 @@
 #include <stdlib.h>
 
 #include <glib.h>
-#include <libebook/e-vcard.h>
+#include <libebook/libebook.h>
 #include <glib/gstdio.h>
 
 #include <libxml/tree.h>
@@ -127,6 +127,8 @@ static int test(const char *buf, const char *vcard, int ret)
     g_assert(carddata != NULL);
 
     g_assert(search(tmp, doc, carddata, filter, ret) == ret);
+
+    return 0;
 }
 
 static const char vcard1[] =
@@ -356,7 +358,9 @@ int main(int argc, char *argv[])
         { 0 }
     };
 
+#if !GLIB_CHECK_VERSION(2,35,0)
     g_type_init();
+#endif
 
     g_test_init(&argc, &argv, NULL);
 
