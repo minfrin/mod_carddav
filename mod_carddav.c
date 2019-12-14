@@ -344,12 +344,12 @@ static dav_error *carddav_prop_allowed(request_rec *r,
     return dav_acl_check(r, resource, ARRAY(privs));
 }
 
-static dav_hooks_acl *carddav_acl_hooks(void)
+static dav_acl_provider *carddav_acl_hooks(void)
 {
-    static dav_hooks_acl h =
+    static dav_acl_provider h =
     {
-	acl_check_read: carddav_read_allowed,
-	acl_check_prop: carddav_prop_allowed
+	.acl_check_read = carddav_read_allowed,
+	.acl_check_prop = carddav_prop_allowed
     };
 
     return &h;
@@ -378,7 +378,7 @@ static void carddav_send_props(apr_bucket_brigade *bb, request_rec *r,
 
 	/* store these for dav_get_props callbacks */
 	resource->ctx = p;
-	resource->acl_hooks = carddav_acl_hooks();
+	resource->acls = carddav_acl_hooks();
 	response.propresult = dav_get_props(propdb, adoc);
     }
 
@@ -549,7 +549,7 @@ static void carddav_send_multiget(const char *subdir, int depth,
     xmlNode *node = NULL;
 
     if (prop == NULL) {
-	dav_handle_err(r, dav_new_error(r->pool, HTTP_NOT_FOUND, 0,
+	dav_handle_err(r, dav_new_error(r->pool, HTTP_NOT_FOUND, 0, APR_SUCCESS,
 					"Property <prop> not given"), NULL);
 	return;
     }
@@ -632,18 +632,11 @@ static void carddav_log_err(request_rec *r, dav_error *err, int level)
     /* Log the errors */
     /* ### should have a directive to log the first or all */
     for (errscan = err; errscan != NULL; errscan = errscan->prev) {
-	if (errscan->desc == NULL)
-	    continue;
+        if (errscan->desc == NULL)
+            continue;
 
-	if (errscan->save_errno != 0) {
-	    errno = errscan->save_errno;
-	    ap_log_rerror(APLOG_MARK, level, errno, r, "%s [%d, #%d]",
-			  errscan->desc, errscan->status, errscan->error_id);
-	}
-	else {
-	    ap_log_rerror(APLOG_MARK, level, 0, r, "%s [%d, #%d]",
-			  errscan->desc, errscan->status, errscan->error_id);
-	}
+        ap_log_rerror(APLOG_MARK, level, errscan->aprerr, r, "%s [%d, #%d]",
+            errscan->desc, errscan->status, errscan->error_id);
     }
 }
 
@@ -714,7 +707,7 @@ static int carddav_mkcol(carddav_dir_cfg *conf, request_rec *r)
     dav_error *err = NULL;
 
     if (conf->provider == NULL)
-	return dav_handle_err(r, dav_new_error(r->pool, HTTP_FORBIDDEN, 0,
+	return dav_handle_err(r, dav_new_error(r->pool, HTTP_FORBIDDEN, 0, APR_SUCCESS,
 			       "Directory path not configured, you need some "
 			       "carddav directives !"), NULL);
 
@@ -728,7 +721,7 @@ static int carddav_mkcol(carddav_dir_cfg *conf, request_rec *r)
 	return dav_handle_err(r, err, NULL);
 
     if (resource->exists) {
-	err = dav_new_error(r->pool, HTTP_FORBIDDEN, 0, "Collection exists already");
+	err = dav_new_error(r->pool, HTTP_FORBIDDEN, 0, APR_SUCCESS, "Collection exists already");
 	err->tagname = "resource-must-be-null";
 	return dav_handle_err(r, err, NULL);
     }
@@ -783,7 +776,7 @@ static int carddav_mkcol(carddav_dir_cfg *conf, request_rec *r)
     if ((result = ap_xml_parse_input(r, &doc)) != OK) {
 	resource->hooks->remove_resource(resource, &multi_status);
 
-	err = dav_new_error(r->pool, HTTP_CONFLICT, 0,
+	err = dav_new_error(r->pool, HTTP_CONFLICT, 0, APR_SUCCESS,
 			    "Body could not be parsed !");
 	return dav_handle_err(r, err, NULL);
     }
@@ -861,7 +854,7 @@ static int carddav_mkcol(carddav_dir_cfg *conf, request_rec *r)
 		    if (c)
 			continue;
 		    else
-			ctx->err = dav_new_error(r->pool, HTTP_CONFLICT,
+			ctx->err = dav_new_error(r->pool, HTTP_CONFLICT, APR_SUCCESS,
 						 DAV_ERR_PROP_NOT_FOUND,
 						 "Property not found.");
 		}
@@ -905,9 +898,9 @@ static int carddav_mkcol(carddav_dir_cfg *conf, request_rec *r)
 	carddav_send_mkcol_response(r, !failure ? HTTP_CREATED : HTTP_CONFLICT,
 				    &resp, doc->namespaces);
 
-	if (!failure && (resource->acl_hooks = dav_get_acl_hooks()) &&
-		resource->acl_hooks->acl_post_processing)
-	    resource->acl_hooks->acl_post_processing(r, resource, 1);
+	if (!failure && (resource->acls = dav_get_acl_providers("acl")) &&
+		resource->acls->acl_post_processing)
+	    resource->acls->acl_post_processing(r, resource, 1);
 	return DONE;
     }
     return DECLINED;
@@ -930,7 +923,7 @@ static int carddav_report(carddav_dir_cfg *conf, request_rec *r)
 	conf->provider->repos->get_resource(r, NULL, NULL, 0, &resource);
     }
     else {
-	err = dav_new_error(r->pool, HTTP_FORBIDDEN, 0,
+	err = dav_new_error(r->pool, HTTP_FORBIDDEN, 0, APR_SUCCESS,
 			    "Directory path not configured, you need some "
 			    "carddav directives !");
 	return dav_handle_err(r, err, NULL);
@@ -1004,7 +997,7 @@ static int carddav_report(carddav_dir_cfg *conf, request_rec *r)
 
 error:
     xmlFreeDoc(doc);
-    err = dav_new_error(r->pool, HTTP_BAD_REQUEST, 0,
+    err = dav_new_error(r->pool, HTTP_BAD_REQUEST, 0, APR_SUCCESS,
 			"Depth-header value incorrect");
 
     return dav_handle_err(r, err, NULL);
@@ -1045,7 +1038,9 @@ static int carddav_initialize_module(apr_pool_t *p, apr_pool_t *plog,
      * initialize_acl_module() will be called twice, and if it's a DSO
      * then all static data from the first call will be lost. Only
      * set up our static data on the second call. */
+#if !GLIB_CHECK_VERSION(2,35,0)
     g_type_init();
+#endif
 
     apr_pool_userdata_get(&data, key, s->process->pool);
     if (data == NULL)
@@ -1115,8 +1110,7 @@ dav_resource_type_provider
 #endif
 res_hooks =
 {
-    carddav_get_resource_type,
-    NULL
+    carddav_get_resource_type
 };
 
 static void carddav_add_input_filter(request_rec *r)

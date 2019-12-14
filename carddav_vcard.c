@@ -28,7 +28,7 @@
 #include <limits.h>
 
 #include <glib.h>
-#include <libebook/e-vcard.h>
+#include <libebook/libebook.h>
 
 #include <libxml/tree.h>
 #include "mod_carddav.h"
